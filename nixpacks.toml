@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["nodejs_18", "chromium", "nss", "atk", "at-spi2-atk", "cups", "gtk3", "pango", "cairo", "xorg.libX11", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXrandr", "xorg.libxcb", "xorg.libxshmfence", "mesa", "expat", "glib"]
+
+[variables]
+PUPPETEER_EXECUTABLE_PATH = "/nix/store/*/bin/chromium"
