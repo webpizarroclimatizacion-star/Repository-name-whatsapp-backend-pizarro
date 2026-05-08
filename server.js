@@ -363,7 +363,52 @@ app.post("/send-campaign", requireApiKey, async (req, res) => {
     console.error(err);
   }
 });
+app.get("/chats/:session_id", requireApiKey, async (req, res) => {
+  try {
+    const sessionId = req.params.session_id;
+    const session = getSession(sessionId);
 
+    if (!session || !session.client) {
+      return res.status(404).json({ ok: false, error: "Sesión no encontrada" });
+    }
+
+    if (session.status !== "connected") {
+      return res.status(400).json({
+        ok: false,
+        error: "La sesión no está conectada",
+        status: session.status
+      });
+    }
+
+    const chats = await session.client.getChats();
+
+    const result = chats
+      .filter(chat => !chat.isGroup)
+      .map(chat => ({
+        chat_id: chat.id?._serialized,
+        nombre: chat.name || chat.id?.user || "",
+        telefono: chat.id?.user || "",
+        ultimo_mensaje: chat.lastMessage?.body || "",
+        fecha_ultimo_mensaje: chat.timestamp
+          ? new Date(chat.timestamp * 1000).toISOString()
+          : null,
+        cantidad_no_leidos: chat.unreadCount || 0,
+        es_grupo: chat.isGroup || false,
+        session_id: sessionId,
+        sucursal: session.sucursalId || ""
+      }));
+
+    res.json({
+      ok: true,
+      session_id: sessionId,
+      total: result.length,
+      chats: result
+    });
+  } catch (err) {
+    console.error("Error obteniendo chats:", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 app.post("/disconnect-session", requireApiKey, async (req, res) => {
   try {
     const { session_id } = req.body;
