@@ -386,23 +386,47 @@ app.get("/chats/:session_id", requireApiKey, async (req, res) => {
       });
     }
 
-    const chats = await session.client.getChats();
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-    const result = chats
-      .filter(chat => !chat.isGroup)
-      .map(chat => ({
-        chat_id: chat.id?._serialized,
-        nombre: chat.name || chat.id?.user || "",
-        telefono: chat.id?.user || "",
-        ultimo_mensaje: chat.lastMessage?.body || "",
-        fecha_ultimo_mensaje: chat.timestamp
-          ? new Date(chat.timestamp * 1000).toISOString()
-          : null,
-        cantidad_no_leidos: chat.unreadCount || 0,
-        es_grupo: chat.isGroup || false,
-        session_id: sessionId,
-        sucursal: session.sucursalId || ""
-      }));
+const state = await session.client.getState().catch(() => null);
+
+if (state !== "CONNECTED") {
+  return res.status(400).json({
+    ok: false,
+    error: "WhatsApp todavía no está completamente conectado",
+    state
+  });
+}
+
+let chats = [];
+
+try {
+  chats = await session.client.getChats();
+} catch (err) {
+  console.error("Error en getChats:", err.message);
+
+  return res.status(500).json({
+    ok: false,
+    error: "No se pudieron cargar los chats. Esperá unos segundos y volvé a sincronizar.",
+    detail: err.message
+  });
+}
+
+const result = chats
+  .filter(chat => !chat.isGroup)
+  .map(chat => ({
+    chat_id: chat.id?._serialized,
+    nombre: chat.name || chat.id?.user || "",
+    telefono: chat.id?.user || "",
+    ultimo_mensaje: chat.lastMessage?.body || "",
+    fecha_ultimo_mensaje: chat.timestamp
+      ? new Date(chat.timestamp * 1000).toISOString()
+      : null,
+    cantidad_no_leidos: chat.unreadCount || 0,
+    es_grupo: chat.isGroup || false,
+    session_id: sessionId,
+    sucursal: session.sucursalId || ""
+  }));
 
     res.json({
       ok: true,
