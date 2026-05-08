@@ -5,7 +5,13 @@ const cors = require("cors");
 const qrcode = require("qrcode");
 const axios = require("axios");
 const { Client, LocalAuth } = require("whatsapp-web.js");
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection capturada:", reason);
+});
 
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception capturada:", err);
+});
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
