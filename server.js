@@ -91,17 +91,19 @@ async function createClient(sessionId, sucursalId) {
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: sessionId }),
     puppeteer: {
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--disable-gpu"
-      ]
-    }
+  headless: true,
+  protocolTimeout: 120000,
+  timeout: 120000,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-accelerated-2d-canvas",
+    "--no-first-run",
+    "--no-zygote",
+    "--disable-gpu"
+  ]
+}
   });
 
   state.client = client;
